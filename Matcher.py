@@ -15,9 +15,11 @@ MIN_MATCH_COUNT = 2
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 class Matcher:
-	def __init__(self, roi, alg):
+	def __init__(self, roi, alg, distCoeffs, cameraMatrix):
 		self.roi = roi # a ROI pattern object
 		self.alg = alg
+		self.cameraMatrix = cameraMatrix
+		self.distCoeffs = distCoeffs
 		#self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # a frame
 		#self.frame = frame # a frame object
 		#self.pattern = cv2.cvtColor(pattern, cv2.COLOR_BGR2GRAY)
@@ -102,17 +104,48 @@ class Matcher:
 			h,w = self.roi.image.shape
 			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
 			print('homography good matches', len(pts))
-			dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
-			print('points output:', len(dst))
+			try:
+				dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
+			except:
+				print('No matching points after homography estimation')
+				return
+			print('points output:', len(dst)) # TODO: always 4?????
 
+			self.pose3d = self.computePose(src_pts,dst)
 			print(' ')
+
+			#print(self.pose3d)
 		else:
 			print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
 			matchesMask = None
 
-	def computePose(self, camera_matrix):
+	def computePose(self, src, dst):
 		''' find the camera pose for the current frame, by solving PnP problem '''
+
+		'''
+		cv2.solvePnP(objectPoints, imagePoints, 
+			cameraMatrix, distCoeffs[, rvec[, tvec[, useExtrinsicGuess[, flags]]]]) 
+		→ retval, rvec, tvec
+		'''
+		retval, rvec, tvec = cv2.solvePnP(self.roi.getPoints3d(), dst, self.cameraMatrix, self.distCoeffs)
+		print('retval',retval)
+		# project 3D points to image plane http://docs.opencv.org/trunk/d7/d53/tutorial_py_pose.html
+		'''
+		cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs
+			[, imagePoints[, jacobian[, aspectRatio]]]) 
+		→ imagePoints, jacobian
+		'''
+		'''
+        imgpts, jac = cv2.projectPoints(axis, rvec, tvec, self.cameraMatrix, self.distCoeffs)
+        img = draw(img,corners2,imgpts)
+        cv2.imshow('img',img)
+        k = cv2.waitKey(0) & 0xFF
+        if k == ord('s'):
+            cv2.imwrite(fname[:6]+'.png', img)
 		pass
+		'''
+
+
 
 '''
 draw_params = dict(matchColor = (0,255,0), # draw matches in green color

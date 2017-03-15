@@ -15,11 +15,14 @@ from ROI import ROI
 from Matcher import Matcher
 from Frame import Frame
 
+disCoeff = np.float32([0.0481117368, 0.1561547816, 0.0549917854, -0.0129148327])
+cameraMatrix = np.float32([[1007.356812, 0.0, 642.705933], [0.0, 1033.845215, 517.837097],[0.0,0.0,1.0]])
+
 class App:
-	def __init__(self, cameraMatrix, alg):
+	def __init__(self, alg):
 		self.referencePoints = []
 		self.cropping = False
-		self.cameraMatrix = cameraMatrix
+		#self.cameraMatrix = cameraMatrix
 		self.roi = None
 		self.alg = alg
 
@@ -42,6 +45,13 @@ class App:
 			# draw a rectangle around the region of interest
 			#cv2.rectangle(self.currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
 			#cv2.imshow("frame", self.currentFrame)
+
+	def draw(self, img, corners, imgpts):
+	    corner = tuple(corners[0].ravel())
+	    img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
+	    img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
+	    img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
+	    return img
 
 	def main(self):
 		# crop the webcam frame to get the marker pattern
@@ -93,7 +103,7 @@ class App:
 		# handling the logic for pattern matching ...
 		#cap2 = cv2.VideoCapture(0)
 		cv2.waitKey(100)
-		matcher = Matcher(self.roi, self.alg)
+		matcher = Matcher(self.roi, self.alg, disCoeff, cameraMatrix)
 
 		while True:
 			# Capture frame-by-frame
@@ -116,5 +126,5 @@ class App:
 
 
 if __name__ == '__main__':
-	app = App(None, 'sift')
+	app = App('sift')
 	app.main()

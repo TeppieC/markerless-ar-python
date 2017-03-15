@@ -25,4 +25,8 @@
 
 ##Currently work on:
 - Solve PnP
-- 
+- Projection
+
+##Problems
+1. What does homography estimation do? Why it is always 4?
+
