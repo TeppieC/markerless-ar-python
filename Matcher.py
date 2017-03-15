@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from Frame import Frame
 
-MIN_MATCH_COUNT = 10
+MIN_MATCH_COUNT = 2
 #img1 = cv2.cvtColor(img1raw, cv2.COLOR_BGR2GRAY)
 #img2 = cv2.cvtColor(img2raw, cv2.COLOR_BGR2GRAY)
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -81,24 +81,31 @@ class Matcher:
 				#print(m)
 		print('# good matches:', len(good))
 
-		return good
-
-	def getMatchLocations(self):
 		if len(good)>MIN_MATCH_COUNT:
 			src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) # 3d vectors ? How to get the 3D points??
 			dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2) # 2d vectors
-			print(np.float32([ kp1[m.queryIdx].pt for m in good ]))
-			print(np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2))
+			#print(np.float32([ kp1[m.queryIdx].pt for m in good ]))
+			#print(np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2))
+
+			#print(len(src_pts)) # The two is the same length
+			#print(len(dst_pts))
 			#print(src_pts[0])
 			#print(dst_pts[0])
 
 			# Find homography transformation and detect good matches
-			M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+			# bring points from a pattern to the query image coordinate system
+			# see Homography Transformation
+			# API: Finds a perspective transformation between two planes.
+			# http://docs.opencv.org/3.0-beta/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findhomography
+			M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
 			matchesMask = mask.ravel().tolist()
-			h,w,d = roi.image.shape
+			h,w = self.roi.image.shape
 			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-			dst = cv2.perspectiveTransform(pts,M)
-			img2 = cv2.polylines(frame,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+			print('homography good matches', len(pts))
+			dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
+			print('points output:', len(dst))
+
+			print(' ')
 		else:
 			print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
 			matchesMask = None

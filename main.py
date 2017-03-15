@@ -105,8 +105,7 @@ class App:
 			cv2.waitKey(100)
 
 			matcher.setFrame(currentFrame)
-			goodMatches = matcher.getCorrespondence()
-			print(len(goodMatches))
+			matcher.getCorrespondence()
 			# TODO: need to show the correspondences
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
