@@ -11,13 +11,17 @@ Distortion factor: k1=-0.0481117368, k2=0.1561547816, p1=0.0549917854, p2=-0.012
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+from ROI import ROI
+from Matcher import Match
+from Frame import Frame
 
 class App:
 	def __init__(self, cameraMatrix):
 		self.referencePoints = []
 		self.cropping = False
-		self.current_frame = None
+		self.currentFrame = None
 		self.cameraMatrix = cameraMatrix
+		self.roi = None
 
 	def chooseMarker(self):
 		cap = cv2.VideoCapture(0)
@@ -27,7 +31,7 @@ class App:
 			# Capture frame-by-frame
 			ret, frame = cap.read()
 
-			self.current_frame = frame.copy()
+			self.currentFrame = frame.copy()
 			cv2.namedWindow("frame")
 			cv2.setMouseCallback("frame", self.click_and_crop)
 
@@ -40,13 +44,16 @@ class App:
 			# if there are two reference points, then crop the region of interest
 			# from teh image and display it
 			if len(self.referencePoints) == 2:
-				roi = self.current_frame[self.referencePoints[0][1]:self.referencePoints[1][1], \
+				cropImage = self.currentFrame[self.referencePoints[0][1]:self.referencePoints[1][1], \
 						self.referencePoints[0][0]:self.referencePoints[1][0]]
-				cv2.imshow("ROI", roi)
-				if cv2.waitKey(1) & 0xFF == ord('q'):
-					cap.release()
-					cv2.destroyAllWindows()
-					return roi
+				#cap.release()
+				cv2.rectangle(self.currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
+				#cv2.destroyAllWindows()
+				return cropImage
+				#if cv2.waitKey(1) & 0xFF == ord('q'):
+				#	cap.release()
+				#	cv2.destroyAllWindows()
+				#	return roi
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				cap.release()
@@ -70,22 +77,24 @@ class App:
 			self.cropping = False
 	 
 			# draw a rectangle around the region of interest
-			cv2.rectangle(self.current_frame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
-			cv2.imshow("image", self.current_frame)
+			#cv2.rectangle(self.currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
+			#cv2.imshow("frame", self.currentFrame)
 
-	def processFrames(self):
+	def processFrames(self, roi, cameraMatrix):
 		cap = cv2.VideoCapture(0)
 
 		while True:
- 
 			# Capture frame-by-frame
 			ret, frame = cap.read()
-			self.current_frame = frame.copy()
+			cv2.namedWindow('webcam')
+			cv2.imshow('webcam', frame)
+			cv2.waitKey(20)
 
+			self.currentFrame = Frame(frame.copy())
 
-
-			cv2.imshow('frame', self.current_frame)
-			cv2.imshow('marker', self.roi)
+			currentMatch = Match(self.roi, self.currentFrame)
+			goodMatches = currentMatch.getCorrespondence()
+			# TODO: need to show the correspondences
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				cap.release()
@@ -94,11 +103,16 @@ class App:
 
 
 	def main(self):
-		self.roi = self.chooseMarker()
-		self.processFrames()
+		# crop the webcam frame to get the marker pattern
+		self.patternImage = self.chooseMarker()
+		# initialize a pattern object for the marker
+		self.roi = ROI(self.patternImage)
+
+		# handling the logic for pattern matching ...
+		self.processFrames(self.roi, self.cameraMatrix)
 
 
 
 if __name__ == '__main__':
-	app = App()
+	app = App(None)
 	app.main()
