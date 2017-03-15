@@ -4,13 +4,20 @@ from matplotlib import pyplot as plt
 
 class ROI(object):
 	"""docstring for Marker"""
-	def __init__(self, image):
+	def __init__(self, image, alg):
 		self.image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		# Initiate SIFT detector
-		sift = cv2.xfeatures2d.SIFT_create()
-		# find the keypoints and descriptors with SIFT
-		self.keypoints, self.descriptors = sift.detectAndCompute(self.image, None)
-		
+
+		if alg == 'orb':
+			# Initiate ORB detector
+			orb = cv2.ORB_create()
+			# find the keypoints and descriptors with ORB
+			self.keypoints, self.descriptors = orb.detectAndCompute(self.image, None)
+		elif alg == 'sift':
+			# Initiate SIFT detector
+			sift = cv2.xfeatures2d.SIFT_create()
+			# find the keypoints and descriptors with SIFT
+			self.keypoints, self.descriptors = sift.detectAndCompute(self.image, None)
+			
 		width, height = self.image.shape
 
 		# normalize

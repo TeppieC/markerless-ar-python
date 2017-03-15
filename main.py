@@ -12,16 +12,16 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from ROI import ROI
-from Matcher import Match
+from Matcher import Matcher
 from Frame import Frame
 
 class App:
-	def __init__(self, cameraMatrix):
+	def __init__(self, cameraMatrix, alg):
 		self.referencePoints = []
 		self.cropping = False
-		self.currentFrame = None
 		self.cameraMatrix = cameraMatrix
 		self.roi = None
+		self.alg = alg
 
 	def click_and_crop(self, event, x, y, flags, param):
 	 
@@ -71,7 +71,7 @@ class App:
 				cv2.rectangle(currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
 				#cv2.destroyAllWindows()
 				# initialize a pattern object for the marker
-				self.roi = ROI(cropImage)
+				self.roi = ROI(cropImage, self.alg)
 
 				cv2.imshow('choose marker',currentFrame)
 				cv2.waitKey(1000)
@@ -93,6 +93,7 @@ class App:
 		# handling the logic for pattern matching ...
 		#cap2 = cv2.VideoCapture(0)
 		cv2.waitKey(100)
+		matcher = Matcher(self.roi, self.alg)
 
 		while True:
 			# Capture frame-by-frame
@@ -103,8 +104,9 @@ class App:
 			cv2.imshow('webcam', currentFrame)
 			cv2.waitKey(100)
 
-			currentMatch = Match(self.roi, Frame(currentFrame))
-			goodMatches = currentMatch.getCorrespondence()
+			matcher.setFrame(currentFrame)
+			goodMatches = matcher.getCorrespondence()
+			print(len(goodMatches))
 			# TODO: need to show the correspondences
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -115,5 +117,5 @@ class App:
 
 
 if __name__ == '__main__':
-	app = App(None)
+	app = App(None, 'sift')
 	app.main()

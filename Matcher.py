@@ -14,17 +14,20 @@ MIN_MATCH_COUNT = 10
 #img2 = cv2.cvtColor(img2raw, cv2.COLOR_BGR2GRAY)
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-class Match:
-	def __init__(self, roi, frame):
+class Matcher:
+	def __init__(self, roi, alg):
 		self.roi = roi # a ROI pattern object
+		self.alg = alg
 		#self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # a frame
-		self.frame = frame # a frame object
+		#self.frame = frame # a frame object
 		#self.pattern = cv2.cvtColor(pattern, cv2.COLOR_BGR2GRAY)
+
+	def setFrame(self, frame):
+		self.frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 	def getCorrespondence(self):
 		# Initiate SIFT detector
 		#sift = cv2.xfeatures2d.SIFT_create()
-		#orb = cv2.ORB_create()
 		# find the keypoints and descriptors with SIFT
 
 		#kp1, des1 = sift.detectAndCompute(self.pattern, None)
@@ -32,23 +35,31 @@ class Match:
 		kp1 = self.roi.keypoints
 		des1 = self.roi.descriptors
 
-		print(len(kp1))
-		print(len(des1))
+		#print(len(kp1))
+		print('# des for marker', len(des1))
 		#kp1, des1 = sift.detectAndCompute(img1,None) # kp1: keypoints from the model
-		#kp2, des2 = orb.detectAndCompute(self.frame, None) # kp2: keypoints from the frame/captured image
-		#print(self.frame.shape) # TODO: no kp/des?
-
-		kp2 = self.frame.keypoints
-		des2 = self.frame.descriptors
-		print(len(kp2))
-		print(len(des2))
-
-		FLANN_INDEX_KDTREE = 1
-		#index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-		index_params= dict(algorithm = FLANN_INDEX_LSH,
+		if self.alg == 'orb':
+			orb = cv2.ORB_create()
+			kp2, des2 = orb.detectAndCompute(self.frame, None) # kp2: keypoints from the frame/captured image
+			FLANN_INDEX_LSH = 6
+			index_params= dict(algorithm = FLANN_INDEX_LSH,
 				   table_number = 6, # 12
 				   key_size = 12,     # 20
 				   multi_probe_level = 1) #2
+		elif self.alg == 'sift':
+			FLANN_INDEX_KDTREE = 1
+			sift = cv2.xfeatures2d.SIFT_create()
+			kp2, des2 = sift.detectAndCompute(self.frame, None) # kp2: keypoints from the frame/captured image
+			index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+
+		print('# des for frame', len(des2))
+		#print(self.frame.shape) # TODO: no kp/des?
+
+		#kp2 = self.frame.keypoints
+		#des2 = self.frame.descriptors
+		#print(len(kp2))
+
+
 		search_params = dict(checks = 50)
 		flann = cv2.FlannBasedMatcher(index_params, search_params)
 
@@ -60,7 +71,11 @@ class Match:
 
 		# store all the good matches as per Lowe's ratio test.
 		good = [] # good is a container for 3D points found in scene
-		for m,n in matches:
+		for m_n in matches:
+			if len(m_n)!=2:
+				continue
+			# http://stackoverflow.com/questions/25018423/opencv-python-error-when-using-orb-images-feature-matching
+			(m, n) = m_n
 			if m.distance < 0.7*n.distance:
 				good.append(m) # m is from the scene/captured image <DMatch 0x104a34c30>
 				#print(m)
