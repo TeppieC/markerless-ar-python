@@ -23,43 +23,6 @@ class App:
 		self.cameraMatrix = cameraMatrix
 		self.roi = None
 
-	def chooseMarker(self):
-		cap = cv2.VideoCapture(0)
-
-		while True:
- 
-			# Capture frame-by-frame
-			ret, frame = cap.read()
-
-			self.currentFrame = frame.copy()
-			cv2.namedWindow("frame")
-			cv2.setMouseCallback("frame", self.click_and_crop)
-
-			# Our operations on the frame come here
-			#gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-			
-			# Display the resulting frame
-			cv2.imshow('frame',frame)
-
-			# if there are two reference points, then crop the region of interest
-			# from teh image and display it
-			if len(self.referencePoints) == 2:
-				cropImage = self.currentFrame[self.referencePoints[0][1]:self.referencePoints[1][1], \
-						self.referencePoints[0][0]:self.referencePoints[1][0]]
-				#cap.release()
-				cv2.rectangle(self.currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
-				#cv2.destroyAllWindows()
-				return cropImage
-				#if cv2.waitKey(1) & 0xFF == ord('q'):
-				#	cap.release()
-				#	cv2.destroyAllWindows()
-				#	return roi
-
-			if cv2.waitKey(1) & 0xFF == ord('q'):
-				cap.release()
-				cv2.destroyAllWindows()
-				break
-
 	def click_and_crop(self, event, x, y, flags, param):
 	 
 		# if the left mouse button was clicked, record the starting
@@ -80,21 +43,45 @@ class App:
 			#cv2.rectangle(self.currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
 			#cv2.imshow("frame", self.currentFrame)
 
-	def processFrames(self, roi, cameraMatrix):
+	def main(self):
+		# crop the webcam frame to get the marker pattern
 		cap = cv2.VideoCapture(0)
 
 		while True:
+ 
 			# Capture frame-by-frame
 			ret, frame = cap.read()
-			cv2.namedWindow('webcam')
-			cv2.imshow('webcam', frame)
-			cv2.waitKey(20)
 
-			self.currentFrame = Frame(frame.copy())
+			currentFrame = frame.copy()
+			cv2.namedWindow("choose marker")
+			cv2.setMouseCallback("choose marker", self.click_and_crop)
 
-			currentMatch = Match(self.roi, self.currentFrame)
-			goodMatches = currentMatch.getCorrespondence()
-			# TODO: need to show the correspondences
+			# Our operations on the frame come here
+			#gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			
+			# Display the resulting frame
+			cv2.imshow('choose marker',frame)
+
+			# if there are two reference points, then crop the region of interest
+			# from teh image and display it
+			if len(self.referencePoints) == 2:
+				cropImage = currentFrame[self.referencePoints[0][1]:self.referencePoints[1][1], \
+						self.referencePoints[0][0]:self.referencePoints[1][0]]
+				#cap.release()
+				cv2.rectangle(currentFrame, self.referencePoints[0], self.referencePoints[1], (0, 255, 0), 2)
+				#cv2.destroyAllWindows()
+				# initialize a pattern object for the marker
+				self.roi = ROI(cropImage)
+
+				cv2.imshow('choose marker',currentFrame)
+				cv2.waitKey(1000)
+				#cap.release()				
+				cv2.destroyWindow('choose marker')
+				break
+				#if cv2.waitKey(1) & 0xFF == ord('q'):
+				#	cap.release()
+				#	cv2.destroyAllWindows()
+				#	return roi
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				cap.release()
@@ -102,15 +89,29 @@ class App:
 				break
 
 
-	def main(self):
-		# crop the webcam frame to get the marker pattern
-		self.patternImage = self.chooseMarker()
-		# initialize a pattern object for the marker
-		self.roi = ROI(self.patternImage)
-
+		
 		# handling the logic for pattern matching ...
-		self.processFrames(self.roi, self.cameraMatrix)
+		#cap2 = cv2.VideoCapture(0)
+		cv2.waitKey(100)
 
+		while True:
+			# Capture frame-by-frame
+			ret, frame = cap.read()
+			currentFrame = frame.copy()
+
+			cv2.namedWindow('webcam')
+			cv2.imshow('webcam', currentFrame)
+			cv2.waitKey(100)
+
+			currentMatch = Match(self.roi, Frame(currentFrame))
+			goodMatches = currentMatch.getCorrespondence()
+			# TODO: need to show the correspondences
+
+			if cv2.waitKey(1) & 0xFF == ord('q'):
+				cap.release()
+				cv2.destroyAllWindows()
+				break
+		
 
 
 if __name__ == '__main__':
