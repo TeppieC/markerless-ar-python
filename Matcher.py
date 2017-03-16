@@ -84,8 +84,8 @@ class Matcher:
 		print('# good matches:', len(good))
 
 		if len(good)>MIN_MATCH_COUNT:
-			src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) # 3d vectors ? How to get the 3D points??
-			dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2) # 2d vectors
+			src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) # n*(1*2)
+			dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2) # n*(1*2)
 			#print(np.float32([ kp1[m.queryIdx].pt for m in good ]))
 			#print(np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2))
 
@@ -127,6 +127,8 @@ class Matcher:
 			cameraMatrix, distCoeffs[, rvec[, tvec[, useExtrinsicGuess[, flags]]]]) 
 		→ retval, rvec, tvec
 		'''
+		print('dst',dst)
+		print('dst shape', dst.shape)
 		retval, rvec, tvec = cv2.solvePnP(self.roi.getPoints3d(), dst, self.cameraMatrix, self.distCoeffs)
 		print('retval',retval)
 		# project 3D points to image plane http://docs.opencv.org/trunk/d7/d53/tutorial_py_pose.html
@@ -136,14 +138,14 @@ class Matcher:
 		→ imagePoints, jacobian
 		'''
 		'''
-        imgpts, jac = cv2.projectPoints(axis, rvec, tvec, self.cameraMatrix, self.distCoeffs)
+        imgpts, jac = cv2.projectPoints(src, rvec, tvec, self.cameraMatrix, self.distCoeffs)
         img = draw(img,corners2,imgpts)
         cv2.imshow('img',img)
         k = cv2.waitKey(0) & 0xFF
         if k == ord('s'):
             cv2.imwrite(fname[:6]+'.png', img)
-		pass
 		'''
+		
 
 
 
