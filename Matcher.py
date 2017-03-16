@@ -94,7 +94,7 @@ class Matcher:
 			#print(src_pts[0])
 			#print(dst_pts[0])
 
-			# Find homography transformation and detect good matches
+			# Find homography transformation and detect good matches, using the matching image point pairs
 			# bring points from a pattern to the query image coordinate system
 			# see Homography Transformation
 			# API: Finds a perspective transformation between two planes.
@@ -102,17 +102,18 @@ class Matcher:
 			M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
 			matchesMask = mask.ravel().tolist()
 			h,w = self.roi.image.shape
-			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-			print('homography good matches', len(pts))
+			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2) #?????? 4
+			#print('pts', len(pts))
 			try:
+				# find the coordinates of the corners of the marker, in the frame image coordination
 				dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
 			except:
 				print('No matching points after homography estimation')
 				return
 			print('points output:', len(dst)) # TODO: always 4?????
 
-			self.pose3d = self.computePose(src_pts,dst)
 			print(' ')
+			return (src_pts, dst_pts, dst)
 
 			#print(self.pose3d)
 		else:
@@ -129,8 +130,9 @@ class Matcher:
 		'''
 		print('dst',dst)
 		print('dst shape', dst.shape)
-		retval, rvec, tvec = cv2.solvePnP(self.roi.getPoints3d(), dst, self.cameraMatrix, self.distCoeffs)
+		retval, rvec, tvec = cv2.solvePnP(src, dst, self.cameraMatrix, self.distCoeffs)
 		print('retval',retval)
+		return (retval, rvec, tvec)
 		# project 3D points to image plane http://docs.opencv.org/trunk/d7/d53/tutorial_py_pose.html
 		'''
 		cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs
