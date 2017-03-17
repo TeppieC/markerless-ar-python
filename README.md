@@ -1,8 +1,19 @@
-# Zhaorui's work for course project
-(Not yet finished)  
+# Zhaorui's work for course project  
 An implementation of markerless augmentment reality, based on openCV3.0 bindings for python3.  
 
-Ideas come from the book Mastering OpenCV codework: [code](https://github.com/MasteringOpenCV/code) copyright by Packt Publishing 2012  
+Ideas come from book: [Mastering OpenCV](https://github.com/MasteringOpenCV/code)   
+copyright by Packt Publishing 2012  
+
+## Dependencies
+- openCV3.0+
+- python 3.4+
+- numpy
+- matplotlib
+
+## To run
+```
+python3 main.py
+```
 
 ## Project Goal
 1. OpenCV implementation of markerless AR
@@ -17,11 +28,10 @@ Ideas come from the book Mastering OpenCV codework: [code](https://github.com/Ma
 - Feature extracting and matchting  
 - Camera Calibration  
 - Pose estimation  
-
-## Currently work on:
 - Solve PnP  
 - Projection  
 
-## Problems
-1. What does homography estimation do? Why it is always 4?  
 
+## Currently work on:
+- fixing translation  
+- make tracking robust to movement
