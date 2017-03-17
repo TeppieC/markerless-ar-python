@@ -131,36 +131,47 @@ class App:
 
 			cv2.namedWindow('webcam')
 			cv2.imshow('webcam', currentFrame)
-			cv2.waitKey(1)
+			#cv2.waitKey(1)
 
 			matcher.setFrame(currentFrame)
-			try:
-				(src, dst, corners) = matcher.getCorrespondence()
-			except:
+			
+
+			result = matcher.getCorrespondence()
+			if result:
+				(src, dst, corners) = result
+			else:
+				#print('Not enough points')
+				cv2.waitKey(1)
 				continue
+
+			#(src, dst, corners) = matcher.getCorrespondence()
+
 
 			#(retval, rvec, tvec) = matcher.computePose(src, dst)
 			(retvalCorner, rvecCorner, tvecCorner) = matcher.computePose(self.roi.getPoints3d(), corners)
+			if retvalCorner:
+				# find the coordinates of the corners in the frame	        
+				#axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
+				axis = np.float32([[0,0,0], [0,3,0], [3,3,0], [3,0,0], [0,0,-3],[0,3,-3],[3,3,-3],[3,0,-3] ])
+				imgpts, jac = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
 
-			# find the coordinates of the corners in the frame	        
-			#axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
-			axis = np.float32([[0,0,0], [0,3,0], [3,3,0], [3,0,0], [0,0,-3],[0,3,-3],[3,3,-3],[3,0,-3] ])
-			imgpts, jac = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
-
-			#currentFrame = self.draw(currentFrame, corners, imgpts) # or pts in matcher?
-			currentFrame = self.renderCube(currentFrame, corners, imgpts)
-			cv2.imshow('webcam', currentFrame)
-			cv2.waitKey(1)
-			# TODO: need to show the correspondences
+				#currentFrame = self.draw(currentFrame, corners, imgpts) # or pts in matcher?
+				currentFrame = self.renderCube(currentFrame, corners, imgpts)
+				cv2.imshow('webcam', currentFrame)
+				cv2.waitKey(1)
+				#cv2.waitKey(1)
+				# TODO: need to show the correspondences
+			else:
+				#print('not able to solve pnp')
+				cv2.waitKey(1)
+				continue
 
 			if cv2.waitKey(1) & 0xFF == ord('q'):
 				cap.release()
 				cv2.destroyAllWindows()
 				break
-		
-
 
 if __name__ == '__main__':
-	app = App('sift','static')
-	#app = App('sift', 'capture')
+	#app = App('sift','static')
+	app = App('sift', 'capture')
 	app.main()

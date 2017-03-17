@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from Frame import Frame
 
-MIN_MATCH_COUNT = 2
+MIN_MATCH_COUNT = 10
 #img1 = cv2.cvtColor(img1raw, cv2.COLOR_BGR2GRAY)
 #img2 = cv2.cvtColor(img2raw, cv2.COLOR_BGR2GRAY)
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -38,7 +38,7 @@ class Matcher:
 		des1 = self.roi.descriptors
 
 		#print(len(kp1))
-		print('# des for marker', len(des1))
+		#print('# des for marker', len(des1))
 		#kp1, des1 = sift.detectAndCompute(img1,None) # kp1: keypoints from the model
 		if self.alg == 'orb':
 			orb = cv2.ORB_create()
@@ -54,7 +54,7 @@ class Matcher:
 			kp2, des2 = sift.detectAndCompute(self.frame, None) # kp2: keypoints from the frame/captured image
 			index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
 
-		print('# des for frame', len(des2))
+		#print('# des for frame', len(des2))
 		#print(self.frame.shape) # TODO: no kp/des?
 
 		#kp2 = self.frame.keypoints
@@ -81,7 +81,7 @@ class Matcher:
 			if m.distance < 0.7*n.distance:
 				good.append(m) # m is from the scene/captured image <DMatch 0x104a34c30>
 				#print(m)
-		print('# good matches:', len(good))
+		#print('# good matches:', len(good))
 
 		if len(good)>MIN_MATCH_COUNT:
 			src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) # n*(1*2)
@@ -108,17 +108,18 @@ class Matcher:
 				# find the coordinates of the corners of the marker, in the frame image coordination
 				dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
 			except:
-				print('No matching points after homography estimation')
+				#print('No matching points after homography estimation')
 				return
-			print('points output:', len(dst)) # TODO: always 4?????
+			#print('points output:', len(dst)) # TODO: always 4?????
 
-			print(' ')
+			#print(' ')
 			return (src_pts, dst_pts, dst)
 
 			#print(self.pose3d)
 		else:
 			print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
 			matchesMask = None
+			return None
 
 	def computePose(self, src, dst):
 		''' find the camera pose for the current frame, by solving PnP problem '''
@@ -128,10 +129,10 @@ class Matcher:
 			cameraMatrix, distCoeffs[, rvec[, tvec[, useExtrinsicGuess[, flags]]]]) 
 		→ retval, rvec, tvec
 		'''
-		print('dst',dst)
-		print('dst shape', dst.shape)
+		#print('dst',dst)
+		#print('dst shape', dst.shape)
 		retval, rvec, tvec = cv2.solvePnP(src, dst, self.cameraMatrix, self.distCoeffs)
-		print('retval',retval)
+		#print('retval',retval)
 		return (retval, rvec, tvec)
 		# project 3D points to image plane http://docs.opencv.org/trunk/d7/d53/tutorial_py_pose.html
 		'''
