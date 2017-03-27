@@ -32,8 +32,12 @@ python3 main.py
 - Projection  
 
 
-## Currently work on:
+## Currently debug on:
 - fixing translation  
 	- rendered cube on the center of the roi image.? why?
 - make tracking robust to movement
-	- severe lag when false positive points detected, and being drawn in renderCube() funciton.
+	- severe lag when false positive points detected, and being drawn in renderCube() funciton. solve: high threshold.
+
+## Need to work on:
+1. change the cube to character, add animation
+2. use subplot as the interface

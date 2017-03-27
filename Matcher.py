@@ -98,7 +98,8 @@ class Matcher:
 			# see Homography Transformation
 			# API: Finds a perspective transformation between two planes.
 			# http://docs.opencv.org/3.0-beta/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findhomography
-			M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
+			M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
+			matchesMask = mask.ravel().tolist()
 
 			h,w = self.roi.image.shape
 			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2) # 4 corners of the roi pattern image

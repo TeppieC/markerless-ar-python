@@ -73,17 +73,6 @@ class App:
 		img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
 		return img
 
-	def renderCube(self, img, corners, imgpts):
-		imgpts = np.int32(imgpts).reshape(-1,2)
-		# draw ground floor in green
-		img = cv2.drawContours(img, [imgpts[:4]],-1,(0,255,0),-3)
-		# draw pillars in blue color
-		for i,j in zip(range(4),range(4,8)):
-			img = cv2.line(img, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
-		# draw top layer in red color
-		img = cv2.drawContours(img, [imgpts[4:]],-1,(0,0,255),3)
-		return img
-
 	def main(self):
 		# crop the webcam frame to get the marker pattern
 		cap = cv2.VideoCapture(0)
@@ -173,15 +162,29 @@ class App:
 			print('enough points')
 
 			#(retval, rvec, tvec) = matcher.computePose(src, dst)
-			(retvalCorner, rvecCorner, tvecCorner) = matcher.computePose(self.roi.getPoints3d(), corners)
+			(retvalCorner, rvecCorner, tvecCorner) = matcher.computePose(self.roi.getPoints3dnew(), corners)
 			if retvalCorner:
-				# find the coordinates of the corners in the frame	        
-				#axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
-				axis = np.float32([[0,0,0], [0,3,0], [3,3,0], [3,0,0], [0,0,-3],[0,3,-3],[3,3,-3],[3,0,-3] ])
+				# find where to draw the axises of the the cube in the frame        
+				#width, height = self.roi.image.shape
+				#axis = np.float32([[0,0,0],[0,width,0],[width,height,0],[0,0,height]])
+
+				axis = np.float32([[0,0,0], [0,1,0], [1,1,0], [1,0,0], [0,0,-1],[0,1,-1],[1,1,-1],[1,0,-1] ])
+
+				'''
+				cv2.projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs
+					[, imagePoints[, jacobian[, aspectRatio]]]) 
+				→ imagePoints, jacobian
+				'''
+				# project 3d points to 2d coordinates in the frame coordination
 				imgpts, jac = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
-				print('# imgpts',len(imgpts))
-				#currentFrame = self.draw(currentFrame, corners, imgpts) # or pts in matcher?
-				currentFrame = self.renderCube(currentFrame, corners, imgpts)
+
+				print('corners',[corners])
+				print('imgpts[:4]',[imgpts[:4]])
+
+				# re-draw the frame
+				currentFrame = cv2.polylines(currentFrame,[np.int32(corners)],True,255,3, cv2.LINE_AA)
+				currentFrame = self.renderCube(currentFrame, imgpts)
+
 				cv2.imshow('webcam', currentFrame)
 				#plt.subplot(2,1,2),plt.imshow(currentFrame)
 				#plt.show()
@@ -198,6 +201,21 @@ class App:
 				cap.release()
 				cv2.destroyAllWindows()
 				break
+
+	def renderCube(self, img, imgpts):
+		imgpts = np.int32(imgpts).reshape(-1,2)
+		# draw ground floor in green
+		img = cv2.drawContours(img, [imgpts[:4]],-1,(0,255,0),-3)
+
+		
+		# draw pillars in blue color
+		for i,j in zip(range(4),range(4,8)):
+			img = cv2.line(img, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
+		# draw top layer in red color
+		img = cv2.drawContours(img, [imgpts[4:]],-1,(0,0,255),3)
+		
+		return img
+
 
 if __name__ == '__main__':
 	app = App('sift','static')
