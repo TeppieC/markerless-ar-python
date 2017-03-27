@@ -32,7 +32,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from ROI import ROI
 from Matcher import Matcher
-from Frame import Frame
 import argparse
 
 disCoeff = np.float32([k1, k2, p1, p2])
@@ -138,7 +137,7 @@ class App:
 
 
 		
-		# handling the logic for pattern matching ...
+		# handling the logic for pattern matching 
 		#cap2 = cv2.VideoCapture(0)
 		cv2.waitKey(100)
 		matcher = Matcher(self.roi, self.alg, disCoeff, cameraMatrix)
@@ -147,24 +146,31 @@ class App:
 			# Capture frame-by-frame
 			ret, frame = cap.read()
 			currentFrame = frame.copy()
+		
+			'''
+			plt.subplot(2,1,1),plt.imshow(self.roi.image)
+			plt.subplot(2,1,2),plt.imshow(currentFrame)
+			plt.show()
+			'''
 
 			cv2.namedWindow('webcam')
 			cv2.imshow('webcam', currentFrame)
-			#cv2.waitKey(1)
-
+			
 			matcher.setFrame(currentFrame)
 			
 
 			result = matcher.getCorrespondence()
 			if result:
+				# get the corners
 				(src, dst, corners) = result
 			else:
-				#print('Not enough points')
+				# Not enough matching points found
+				print('Not enough points')
 				cv2.waitKey(1)
 				continue
 
 			#(src, dst, corners) = matcher.getCorrespondence()
-
+			print('enough points')
 
 			#(retval, rvec, tvec) = matcher.computePose(src, dst)
 			(retvalCorner, rvecCorner, tvecCorner) = matcher.computePose(self.roi.getPoints3d(), corners)
@@ -173,11 +179,14 @@ class App:
 				#axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
 				axis = np.float32([[0,0,0], [0,3,0], [3,3,0], [3,0,0], [0,0,-3],[0,3,-3],[3,3,-3],[3,0,-3] ])
 				imgpts, jac = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
-
+				print('# imgpts',len(imgpts))
 				#currentFrame = self.draw(currentFrame, corners, imgpts) # or pts in matcher?
 				currentFrame = self.renderCube(currentFrame, corners, imgpts)
 				cv2.imshow('webcam', currentFrame)
+				#plt.subplot(2,1,2),plt.imshow(currentFrame)
+				#plt.show()
 				cv2.waitKey(1)
+				
 				#cv2.waitKey(1)
 				# TODO: need to show the correspondences
 			else:
@@ -191,6 +200,6 @@ class App:
 				break
 
 if __name__ == '__main__':
-	#app = App('sift','static')
-	app = App('sift', 'capture')
+	app = App('sift','static')
+	#app = App('sift', 'capture')
 	app.main()

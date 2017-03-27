@@ -7,9 +7,8 @@ Code based on OpenCV doc - python tutorial.
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-from Frame import Frame
 
-MIN_MATCH_COUNT = 10
+MIN_MATCH_COUNT = 100
 #img1 = cv2.cvtColor(img1raw, cv2.COLOR_BGR2GRAY)
 #img2 = cv2.cvtColor(img2raw, cv2.COLOR_BGR2GRAY)
 #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -99,21 +98,21 @@ class Matcher:
 			# see Homography Transformation
 			# API: Finds a perspective transformation between two planes.
 			# http://docs.opencv.org/3.0-beta/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findhomography
-			M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
-			matchesMask = mask.ravel().tolist()
+			M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0) # M is the transformation matrix, thresholding at 5
+
 			h,w = self.roi.image.shape
-			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2) #?????? 4
+			pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2) # 4 corners of the roi pattern image
 			#print('pts', len(pts))
 			try:
 				# find the coordinates of the corners of the marker, in the frame image coordination
-				dst = cv2.perspectiveTransform(pts,M) # points2d for the frame image
+				# http://docs.opencv.org/3.0-beta/modules/core/doc/operations_on_arrays.html#void%20perspectiveTransform(InputArray%20src,%20OutputArray%20dst,%20InputArray%20m)
+				corners = cv2.perspectiveTransform(pts,M) # points2d for the frame image
 			except:
-				#print('No matching points after homography estimation')
+				print('No matching points after homography estimation')
 				return
-			#print('points output:', len(dst)) # TODO: always 4?????
 
-			#print(' ')
-			return (src_pts, dst_pts, dst)
+			print('enough,',len(good))
+			return (src_pts, dst_pts, corners)
 
 			#print(self.pose3d)
 		else:

@@ -34,4 +34,6 @@ python3 main.py
 
 ## Currently work on:
 - fixing translation  
+	- rendered cube on the center of the roi image.? why?
 - make tracking robust to movement
+	- severe lag when false positive points detected, and being drawn in renderCube() funciton.
