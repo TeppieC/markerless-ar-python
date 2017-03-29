@@ -135,7 +135,7 @@ class App:
 			# Capture frame-by-frame
 			ret, frame = cap.read()
 			currentFrame = frame.copy()
-			mirrorFrame = cv2.resize(frame, (0,0), fx=0.1, fy=0.1)
+			mirrorFrame = cv2.resize(frame, (0,0), fx=0.3, fy=0.3)
 		
 			'''
 			plt.subplot(2,1,1),plt.imshow(self.roi.image)
@@ -184,7 +184,7 @@ class App:
 
 				# re-draw the frame
 				currentFrame = cv2.polylines(currentFrame,[np.int32(corners)],True,255,3, cv2.LINE_AA)
-				currentFrame = self.renderCube(currentFrame, imgpts, mirrorFrame)
+				currentFrame = self.renderImg(currentFrame, imgpts, mirrorFrame)
 
 				cv2.imshow('webcam', currentFrame)
 				#plt.subplot(2,1,2),plt.imshow(currentFrame)
@@ -203,16 +203,23 @@ class App:
 				cv2.destroyAllWindows()
 				break
 
-	def renderCube(self, img, imgpts, mirrorFrame):
+	def renderImg(self, img, imgpts, mirrorFrame):
 		imgpts = np.int32(imgpts).reshape(-1,2)
 		# draw ground floor in green
-		
-		img = cv2.drawContours(img, [imgpts[:4]],-1,(0,255,0),-3)
 
-		'''
+		img = cv2.drawContours(img, [imgpts[:4]],-1,(175,175,175),-3)
+
 		# draw pillars in blue color
 		for i,j in zip(range(4),range(4,8)):
 			img = cv2.line(img, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
+
+		x_offset=y_offset=50
+		x_offset = imgpts[0][0]
+		#print(x_offset)
+		y_offset = imgpts[0][1]
+		img[y_offset:y_offset+mirrorFrame.shape[0], x_offset:x_offset+mirrorFrame.shape[1]] = mirrorFrame
+
+		'''
 		# draw top layer in red color
 		img = cv2.drawContours(img, [imgpts[4:]],-1,(0,0,255),3)
 		'''
