@@ -135,6 +135,7 @@ class App:
 			# Capture frame-by-frame
 			ret, frame = cap.read()
 			currentFrame = frame.copy()
+			mirrorFrame = cv2.resize(frame, (0,0), fx=0.1, fy=0.1)
 		
 			'''
 			plt.subplot(2,1,1),plt.imshow(self.roi.image)
@@ -183,7 +184,7 @@ class App:
 
 				# re-draw the frame
 				currentFrame = cv2.polylines(currentFrame,[np.int32(corners)],True,255,3, cv2.LINE_AA)
-				currentFrame = self.renderCube(currentFrame, imgpts)
+				currentFrame = self.renderCube(currentFrame, imgpts, mirrorFrame)
 
 				cv2.imshow('webcam', currentFrame)
 				#plt.subplot(2,1,2),plt.imshow(currentFrame)
@@ -202,18 +203,19 @@ class App:
 				cv2.destroyAllWindows()
 				break
 
-	def renderCube(self, img, imgpts):
+	def renderCube(self, img, imgpts, mirrorFrame):
 		imgpts = np.int32(imgpts).reshape(-1,2)
 		# draw ground floor in green
+		
 		img = cv2.drawContours(img, [imgpts[:4]],-1,(0,255,0),-3)
 
-		
+		'''
 		# draw pillars in blue color
 		for i,j in zip(range(4),range(4,8)):
 			img = cv2.line(img, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
 		# draw top layer in red color
 		img = cv2.drawContours(img, [imgpts[4:]],-1,(0,0,255),3)
-		
+		'''
 		return img
 
 
