@@ -178,6 +178,7 @@ class App:
 				'''
 				# project 3d points to 2d coordinates in the frame coordination
 				imgpts, jac = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
+				#imgpts2, jac2 = cv2.projectPoints(axis, rvecCorner, tvecCorner, cameraMatrix, disCoeff)
 
 				print('corners',[corners])
 				print('imgpts[:4]',[imgpts[:4]])
