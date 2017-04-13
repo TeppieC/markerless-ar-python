@@ -1,3 +1,7 @@
+'''
+Author: Zhaorui Chen 2017
+
+'''
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -25,15 +29,11 @@ class ROI(object):
 		w = width/maxSize
 		h = height/maxSize
 
-		self.points2d = np.array([[0,0],[width,0],[width,height],[0,height]])
-		self.points3d = np.array([[-w,-h,0],[w,-h,0],[w,h,0],[-w,h,0]]) # normalized center
-		self.points3dnew = np.array([[0,0,0],[w,0,0],[w,h,0],[0,h,0]]) # corner
+		self.points2d = np.array([[0,0],[width,0],[width,height],[0,height]]) # corner points in 2d
+		self.points3d = np.array([[0,0,0],[w,0,0],[w,h,0],[0,h,0]]) # corner points in 3d
 
 	def getPoints2d(self):
 		return self.points2d
 
 	def getPoints3d(self):
 		return self.points3d
-
-	def getPoints3dnew(self):
-		return self.points3dnew
