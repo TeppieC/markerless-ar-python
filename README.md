@@ -1,7 +1,8 @@
+Demo Video @ [https://youtu.be/syIXeapmQnE](https://youtu.be/syIXeapmQnE)  
 # Zhaorui's work for course project  
 An implementation of markerless augmentment reality, based on openCV3.0 bindings for python3.  
 
-Ideas come from book: [Mastering OpenCV](https://github.com/MasteringOpenCV/code)   
+Ideas come from book: Mastering OpenCV [https://github.com/MasteringOpenCV/code](https://github.com/MasteringOpenCV/code)   
 copyright by Packt Publishing 2012  
 
 ## Dependencies
