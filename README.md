@@ -17,6 +17,11 @@ Ensure to have openCV3 for python in environment
 python3 main.py {static, capture} {sift, orb}
 ```
 
+## Results
+Test Result 1             |  Test Result 2             |  Test Result 3
+:-------------------------:|:-------------------------:|:-------------------------:
+![](https://github.com/TeppieC/markerless-ar-python/blob/master/testResults/result1.png "Test result 1")  |  ![](https://github.com/TeppieC/markerless-ar-python/blob/master/testResults/result2.png "Test result 2")  |  ![](https://github.com/TeppieC/markerless-ar-python/blob/master/testResults/result3.png "Test result 3")
+
 ## Trouble Shooting  
 ```  
 OpenCV Error: Bad argument (image is empty or has incorrect depth (!=CV_8U)) in detectAndCompute, file /Users/zhaorui/opencv_contrib/modules/xfeatures2d/src/sift.cpp, line 770  
